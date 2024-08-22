@@ -19,6 +19,7 @@ namespace RetoTecnicoAjinomoto.Controllers
                 var listadoTareas = context.Tareas.ToList();
                 foreach (var item in listadoTareas)
                 {
+                    //iteración de la descripción del estado por cada tarea.
                     item.DescripcionEstado = context.EstadoTarea.Where(x => x.Id == item.IdEstadoTarea).FirstOrDefault().Nombre;
                 }
                 ViewBag.ItemsTarea = listadoTareas;
@@ -58,7 +59,7 @@ namespace RetoTecnicoAjinomoto.Controllers
         {
             using(TareasDbModels context = new TareasDbModels())
             {
-                return View(context.Tareas.Where(x => x.Id == id));
+                return View(context.Tareas.Where(x => x.Id == id)); //recupera el contexto para ser seteado en la vista detalle
             }
         }
 
@@ -137,8 +138,8 @@ namespace RetoTecnicoAjinomoto.Controllers
                 using (TareasDbModels context = new TareasDbModels())
                 {
                     oTareas.Tarea.Id = id;
-                    context.Entry(oTareas.Tarea).State = System.Data.EntityState.Modified;
-                    context.SaveChanges();
+                    context.Entry(oTareas.Tarea).State = System.Data.EntityState.Modified; //Aplicación de la entidad que viaje desde el viewModel para ser modificada
+                    context.SaveChanges(); //guardamos los cambios para que surga efectos.
                     var listadoTareas = context.Tareas.ToList();
                     foreach (var item in listadoTareas)
                     {
@@ -173,7 +174,7 @@ namespace RetoTecnicoAjinomoto.Controllers
                 using (TareasDbModels context = new TareasDbModels())
                 {
                     Tareas oTareas = context.Tareas.Where(x => x.Id == id).FirstOrDefault();
-                    context.Tareas.Remove(oTareas);
+                    context.Tareas.Remove(oTareas); //remueve la tarea de la tabla haciendo referencia al contexto modelo.
                     context.SaveChanges();
                     var listadoTareas = context.Tareas.ToList();
                     foreach (var item in listadoTareas)

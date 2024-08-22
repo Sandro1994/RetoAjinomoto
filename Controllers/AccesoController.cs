@@ -23,8 +23,10 @@ namespace RetoTecnicoAjinomoto.Controllers
             {
                 using (TareasDbModels context = new TareasDbModels())
                 {
+                    //Debemos desencriptar las contraseñas base64 que tenemos alojado en tiempo de ejecución.
                     oLogin.Contrasena = Base64Encode(oLogin.Contrasena);
-                    var ListaUsuarioEntity = context.Usuarios.Where(x => x.Correo == oLogin.Usuario && x.Contrasena == oLogin.Contrasena).ToList();
+                    //Buscamos el usuario logueado mediante el contexto en la tabla Usuarios.
+                    var ListaUsuarioEntity = context.Usuarios.Where(x => x.Correo == oLogin.Usuario && x.Contrasena == oLogin.Contrasena).ToList(); 
                     if (ListaUsuarioEntity.Count == 0)
                     {
                         ViewData["Respuesta"] = "Usuario no encontrado";
@@ -33,10 +35,10 @@ namespace RetoTecnicoAjinomoto.Controllers
                     }
                     else
                     {
-                        var token = GenerateJwtToken(); //generación JWT para ser utilizado como seguridad en todo el proyecto
-                        //return Ok(new { token });
-
+                        var token = GenerateJwtToken(); //si el usuario logueado existe se genera el JWT para ser utilizado como seguridad en todo el proyecto.
+                        
                         var listadoTareas = context.Tareas.ToList();
+                        //Realizamos un match para obtener la descripción estado de tareas para ser visualizado en pantalla (completas | incompletas).
                         foreach (var item in listadoTareas)
                         {
                             item.DescripcionEstado = context.EstadoTarea.Where(x => x.Id == item.IdEstadoTarea).FirstOrDefault().Nombre;
@@ -45,8 +47,8 @@ namespace RetoTecnicoAjinomoto.Controllers
 
 
                         var estadosTarea = context.EstadoTarea.ToList();
-
-                        var modelo = new TareasViewModelRegister
+                        
+                        var modelo = new TareasViewModelRegister  //llenamos un objeto viewModel que nos servira para presentar el jwt y el listado de estados en la ventana principal de busqueda.
                         {
                             JWT = token,
                             ListaEstadoTareas = estadosTarea
@@ -65,12 +67,14 @@ namespace RetoTecnicoAjinomoto.Controllers
 
         public static string Base64Encode(string plainText)
         {
+            //Decodificación base64
             var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
             return System.Convert.ToBase64String(plainTextBytes);
         }
 
         private string GenerateJwtToken()
         {
+            //Generación JWT mediante un apiKey global que se encuentra en el startUp.
             var key = Encoding.ASCII.GetBytes(SecretKey);
             var tokenHandler = new JwtSecurityTokenHandler();
             var tokenDescriptor = new SecurityTokenDescriptor
