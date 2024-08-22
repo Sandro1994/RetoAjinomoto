@@ -1,4 +1,5 @@
 ﻿using RetoTecnicoAjinomoto.Models;
+using RetoTecnicoAjinomoto.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,7 +26,22 @@ namespace RetoTecnicoAjinomoto.Controllers
                     }
                     else
                     {
-                        return View("~/Views/Tareas/Index.cshtml");
+                        var listadoTareas = context.Tareas.ToList();
+                        foreach (var item in listadoTareas)
+                        {
+                            item.DescripcionEstado = context.EstadoTarea.Where(x => x.Id == item.IdEstadoTarea).FirstOrDefault().Nombre;
+                        }
+                        ViewBag.ItemsTarea = listadoTareas;
+
+
+                        var estadosTarea = context.EstadoTarea.ToList();
+
+                        var modelo = new TareasViewModelRegister
+                        {
+                            ListaEstadoTareas = estadosTarea
+                        };
+
+                        return View("~/Views/Tareas/Index.cshtml", modelo);
                     }
                 }
             }

@@ -1,4 +1,5 @@
 ﻿using RetoTecnicoAjinomoto.Models;
+using RetoTecnicoAjinomoto.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,40 @@ namespace RetoTecnicoAjinomoto.Controllers
         {
             using (TareasDbModels context = new TareasDbModels())
             {
-                return View(context.Tareas.ToList());
+                var listadoTareas = context.Tareas.ToList();
+                foreach (var item in listadoTareas)
+                {
+                    item.DescripcionEstado = context.EstadoTarea.Where(x => x.Id == item.IdEstadoTarea).FirstOrDefault().Nombre;
+                }
+                ViewBag.ItemsTarea = listadoTareas;
+                return View("~/Views/Tareas/Index.cshtml", listadoTareas);
+            }
+        }
+
+        public ActionResult Search(int? id)
+        {
+            try
+            {
+                //if (oTareas.Tarea.Titulo != null && oTareas.Tarea.Descripcion != null && oTareas.Tarea.IdEstadoTarea != null)
+                //{
+                //    using (TareasDbModels context = new TareasDbModels())
+                //    {
+                //        context.Tareas.Add(oTareas.Tarea);
+                //        context.SaveChanges();
+                //        var listadoTareas = context.Tareas.ToList();
+                //        foreach (var item in listadoTareas)
+                //        {
+                //            item.DescripcionEstado = context.EstadoTarea.Where(x => x.Id == item.IdEstadoTarea).FirstOrDefault().Nombre;
+                //        }
+                //        ViewBag.ItemsTarea = listadoTareas;
+                //    }
+                //}
+                return View("~/Views/Tareas/Index.cshtml");
+
+            }
+            catch
+            {
+                return View();
             }
         }
 
@@ -28,19 +62,46 @@ namespace RetoTecnicoAjinomoto.Controllers
         }
 
 
+        // GET: Tareas/Create
+        public ActionResult Create()
+        {
+           
+            using (TareasDbModels context = new TareasDbModels())
+            {
+                var estadosTarea = context.EstadoTarea.ToList();
+
+                var modelo = new TareasViewModelRegister
+                {
+                    ListaEstadoTareas = estadosTarea
+                };
+
+                return View("~/Views/Tareas/Create.cshtml", modelo);
+            }
+           
+        }
+
         // POST: Tareas/Create
         [HttpPost]
-        public ActionResult Create(Tareas oTareas)
+        public ActionResult Create(TareasViewModelRegister oTareas)
         {
             try
             {
-                using (TareasDbModels context = new TareasDbModels())
+                if (oTareas.Tarea.Titulo != null && oTareas.Tarea.Descripcion != null && oTareas.Tarea.IdEstadoTarea != null)
                 {
-                    context.Tareas.Add(oTareas);
-                    context.SaveChanges();
+                    using (TareasDbModels context = new TareasDbModels())
+                    {
+                        context.Tareas.Add(oTareas.Tarea);
+                        context.SaveChanges();
+                        var listadoTareas = context.Tareas.ToList();
+                        foreach (var item in listadoTareas)
+                        {
+                            item.DescripcionEstado = context.EstadoTarea.Where(x => x.Id == item.IdEstadoTarea).FirstOrDefault().Nombre;
+                        }
+                        ViewBag.ItemsTarea = listadoTareas;
+                    }
                 }
+                return View("~/Views/Tareas/Index.cshtml");
 
-                return RedirectToAction("Index");
             }
             catch
             {
@@ -53,22 +114,39 @@ namespace RetoTecnicoAjinomoto.Controllers
         {
             using (TareasDbModels context = new TareasDbModels())
             {
-                return View(context.Tareas.Where(x => x.Id == id).FirstOrDefault());
+                var estadosTarea = context.EstadoTarea.ToList();
+                var modelo = new TareasViewModelRegister
+                {
+                    Tarea = context.Tareas.Where(x => x.Id == id).FirstOrDefault(),
+                    ListaEstadoTareas = estadosTarea
+                };
+
+                return View("~/Views/Tareas/Edit.cshtml", modelo);
+
+                //return View();
             }
         }
 
         // POST: Tareas/Edit/5
         [HttpPost]
-        public ActionResult Edit(int id, Tareas oTareas)
+        public ActionResult Edit(int id, TareasViewModelRegister oTareas)
         {
             try
             {
                 using (TareasDbModels context = new TareasDbModels())
                 {
-                    context.Entry(oTareas).State = System.Data.EntityState.Modified;
+                    oTareas.Tarea.Id = id;
+                    context.Entry(oTareas.Tarea).State = System.Data.EntityState.Modified;
                     context.SaveChanges();
+                    var listadoTareas = context.Tareas.ToList();
+                    foreach (var item in listadoTareas)
+                    {
+                        item.DescripcionEstado = context.EstadoTarea.Where(x => x.Id == item.IdEstadoTarea).FirstOrDefault().Nombre;
+                    }
+                    ViewBag.ItemsTarea = listadoTareas;
                 }
-                return RedirectToAction("Index");
+                
+                return View("~/Views/Tareas/Index.cshtml");
             }
             catch
             {
@@ -96,9 +174,15 @@ namespace RetoTecnicoAjinomoto.Controllers
                     Tareas oTareas = context.Tareas.Where(x => x.Id == id).FirstOrDefault();
                     context.Tareas.Remove(oTareas);
                     context.SaveChanges();
+                    var listadoTareas = context.Tareas.ToList();
+                    foreach (var item in listadoTareas)
+                    {
+                        item.DescripcionEstado = context.EstadoTarea.Where(x => x.Id == item.IdEstadoTarea).FirstOrDefault().Nombre;
+                    }
+                    ViewBag.ItemsTarea = listadoTareas;
                 }
 
-                return RedirectToAction("Index");
+                return View("~/Views/Tareas/Index.cshtml");
             }
             catch
             {
