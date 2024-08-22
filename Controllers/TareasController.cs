@@ -8,6 +8,7 @@ using System.Web.Mvc;
 
 namespace RetoTecnicoAjinomoto.Controllers
 {
+    //[Authorize]
     public class TareasController : Controller
     {
         // GET: Tareas

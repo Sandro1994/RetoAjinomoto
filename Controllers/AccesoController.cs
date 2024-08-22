@@ -1,8 +1,12 @@
-﻿using RetoTecnicoAjinomoto.Models;
+﻿using Microsoft.IdentityModel.Tokens;
+using RetoTecnicoAjinomoto.Models;
 using RetoTecnicoAjinomoto.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
+using System.Text;
 using System.Web;
 using System.Web.Mvc;
 
@@ -10,6 +14,9 @@ namespace RetoTecnicoAjinomoto.Controllers
 {
     public class AccesoController : Controller
     {
+
+        private const string SecretKey = "HFmNLA8TSttPzq6lVGlG";
+
         public ActionResult Login(Login oLogin)
         {
             if (!string.IsNullOrWhiteSpace(oLogin.Usuario) && !string.IsNullOrWhiteSpace(oLogin.Contrasena))
@@ -26,6 +33,9 @@ namespace RetoTecnicoAjinomoto.Controllers
                     }
                     else
                     {
+                        var token = GenerateJwtToken(); //generación JWT para ser utilizado como seguridad en todo el proyecto
+                        //return Ok(new { token });
+
                         var listadoTareas = context.Tareas.ToList();
                         foreach (var item in listadoTareas)
                         {
@@ -38,6 +48,7 @@ namespace RetoTecnicoAjinomoto.Controllers
 
                         var modelo = new TareasViewModelRegister
                         {
+                            JWT = token,
                             ListaEstadoTareas = estadosTarea
                         };
 
@@ -56,6 +67,24 @@ namespace RetoTecnicoAjinomoto.Controllers
         {
             var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
             return System.Convert.ToBase64String(plainTextBytes);
+        }
+
+        private string GenerateJwtToken()
+        {
+            var key = Encoding.ASCII.GetBytes(SecretKey);
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.Name, "usuario")
+                }),
+                Expires = DateTime.UtcNow.AddHours(1),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
     }
 }
